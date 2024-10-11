@@ -100,3 +100,6 @@
 	url = https://github.com/RTGS-Lab/Driver_-_Hedorah-VOC.git
 [submodule "lib/Driver_-_HygroVue10"]
 	url = https://github.com/RTGS-Lab/Driver_-_HygroVue10.git
+[submodule "lib/Driver_-_BaroVue10"]
+	path = lib/Driver_-_BaroVue10
+	url = https://github.com/RTGS-Lab/Driver_-_BaroVue10.git
