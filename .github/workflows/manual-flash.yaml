@@ -41,7 +41,7 @@ jobs:
 
       - name: Download latest firmware artifact
         if: github.event.inputs.use_latest_artifact == 'yes'
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: manual-compile.yaml
           name: firmware-binary

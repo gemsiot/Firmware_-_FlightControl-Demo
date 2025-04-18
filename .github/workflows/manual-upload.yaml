@@ -45,7 +45,7 @@ jobs:
 
       - name: Download release artifacts
         if: github.event.inputs.use_release_artifact == 'yes'
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: manual-release.yaml
           name: release-artifacts

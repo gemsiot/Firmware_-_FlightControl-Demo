@@ -59,6 +59,9 @@ int configurePowerSave(int desiredPowerSaveMode);
 #include <vector>
 #include <memory>
 
+#include "hardware/SDI12TalonAdapter.h"
+#include "platform/ParticleTimeProvider.h"
+
 const String firmwareVersion = "2.9.11";
 const String schemaVersion = "2.2.9";
 
@@ -75,6 +78,8 @@ I2CTalon i2c(0, 0x21); //Instantiate I2C talon with alt - null port and hardware
 SDI12Talon sdi12(0, 0x14); //Instantiate SDI12 talon with alt - null port and hardware v1.4
 PCAL9535A ioAlpha(0x20);
 PCAL9535A ioBeta(0x21);
+SDI12TalonAdapter realSdi12(sdi12);
+ParticleTimeProvider realTimeProvider;
 
 String globalNodeID = ""; //Store current node ID
 
@@ -114,7 +119,7 @@ TDR315H soil2(sdi12, 0, 0); //Instantiate soil sensor with default ports and unk
 TDR315H soil3(sdi12, 0, 0); //Instantiate soil sensor with default ports and unknown version, pass over SDI12 Talon interface 
 Hedorah gas(0, 0, 0x10); //Instantiate CO2 sensor with default ports and v1.0 hardware
 // T9602 humidity(0, 0, 0x00); //Instantiate Telair T9602 with default ports and version v0.0 
-LI710 et(sdi12, 0, 0); //Instantiate ET sensor with default ports and unknown version, pass over SDI12 Talon interface 
+LI710 et(realTimeProvider, realSdi12, 0, 0); //Instantiate ET sensor with default ports and unknown version, pass over SDI12 Talon interface 
 BaroVue10 campPressure(sdi12, 0, 0x00); // Instantiate Barovue10 with default ports and v0.0 hardware
 
 const uint8_t numSensors = 7; //Number must match the number of objects defined in `sensors` array
@@ -1077,7 +1082,7 @@ int wakeSensors()
 	for(int s = 0; s < numSensors; s++) {
 		if(sensors[s]->getTalonPort() != 0) {
 			logger.enableData(sensors[s]->getTalonPort(), true); //Turn on data for given port
-			sensors[s]->wake(); //Wake each sensor
+			sensors[s]->wake(realTimeProvider); //Wake each sensor
 			logger.enableData(sensors[s]->getTalonPort(), false); //Turn data back off for given port
 		}
 	}

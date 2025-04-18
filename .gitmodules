@@ -131,3 +131,9 @@
 [submodule "test/external/fff"]
 	path = test/external/fff
 	url = https://github.com/meekrosoft/fff.git
+[submodule "lib/FlightControl-platform-dependencies"]
+	path = lib/FlightControl-platform-dependencies
+	url = https://github.com/gemsiot/FlightControl-platform-dependencies
+[submodule "lib/FlightControl-hardware-dependencies"]
+	path = lib/FlightControl-hardware-dependencies
+	url = https://github.com/gemsiot/FlightControl-hardware-dependencies

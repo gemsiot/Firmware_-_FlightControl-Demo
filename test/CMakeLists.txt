@@ -1,33 +1,42 @@
 # FlightControl_Demo/test/CMakeLists.txt
+#allow debugging
+set(CMAKE_BUILD_TYPE Debug)
+
 # Add GoogleTest
 add_subdirectory(external/googletest)
 
 # Define the TESTING preprocessor macro for all test builds
 add_compile_definitions(TESTING)
 
-# IMPORTANT: Make sure mocks are included first to override system headers
-include_directories(BEFORE mocks)
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include FFF headers
-include_directories(external/fff)
-
-# Include Google Test headers
+# Include Google Test and Google Mock headers
 include_directories(external/googletest/googletest/include)
+include_directories(external/googletest/googlemock/include)
 
-# Create a mocks library
-add_library(mocks STATIC
-    mocks/MockWire.cpp
-    mocks/MockArduino.cpp
-    mocks/MockPCAL9535A.cpp
-    mocks/MockMCP79412.cpp
-    mocks/MockSPI.cpp
-    mocks/MockPCA9634.cpp
-    mocks/MockSHT4x.cpp
-    mocks/MockVEML3328.cpp
-    mocks/MockPAC1934.cpp
-    mocks/MockMXC6655.cpp
-    mocks/MockBMA456.cpp
-    mocks/MockGNSS.cpp
+# Find all driver directories and add them to the include path
+file(GLOB DRIVER_DIRS ${CMAKE_SOURCE_DIR}/lib/*/src)
+
+# Create a library for the mocks
+file(GLOB MOCK_SOURCES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/mocks/*.cpp
+)
+
+# Add a library of mocks - if there are no source files yet, use an interface library
+if(MOCK_SOURCES)
+    add_library(mocks ${MOCK_SOURCES})
+else()
+    add_library(mocks INTERFACE)
+endif()
+
+# Add header include directories for mocks - mock directory MUST be first
+target_include_directories(mocks BEFORE INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/mocks  # Mocks FIRST
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/src
+    ${DRIVER_DIRS}  # Add all driver directories
 )
 
 # Specify test executable
@@ -36,27 +45,13 @@ add_executable(unit_tests
     main.cpp
     
     # Kestrel tests
-    unit/Driver_-_Kestrel/Driver_-_KestrelSetupTests.cpp
-    unit/Driver_-_Kestrel/Driver_-_KestrelFunctionTests.cpp
+    #unit/Driver_-_Kestrel/KestrelTest.cpp
+    #${CMAKE_SOURCE_DIR}/lib/Driver_-_Kestrel/src/Kestrel.cpp
+    
+    # Li710 tests
+    unit/Driver_-_Li710/Li710Test.cpp
+    ${CMAKE_SOURCE_DIR}/lib/Driver_-_Li710/src/Li710.cpp
 )
 
 # Link against mocks and GoogleTest
-target_link_libraries(unit_tests mocks gtest gtest_main)
-
-# Find all driver directories and add them to the include path
-file(GLOB DRIVER_DIRS ${CMAKE_SOURCE_DIR}/lib/*/src)
-
-# Add header include directories - mock directory MUST be first
-target_include_directories(mocks BEFORE PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/mocks  # Mocks FIRST
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src
-    ${DRIVER_DIRS}  # Add all driver directories
-)
-
-target_include_directories(unit_tests BEFORE PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/mocks  # Mocks FIRST
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/src
-    ${DRIVER_DIRS}  # Add all driver directories
-)
+target_link_libraries(unit_tests mocks gtest gtest_main gmock)
